@@ -56,15 +56,42 @@ class Bd {
             // get JSON data and transform it into a object
             let expense = JSON.parse(localStorage.getItem(i));
 
-            if(expense === null) {
+            if (expense === null) {
                 continue;
             }
-            
+
             expenses.push(expense);
 
         }
 
         return expenses
+    }
+
+    search(expenses) {
+        let data = this.getData();
+        let filterExpenses = expenses;
+
+        // loop through all values of the filterExpense object
+        for (let e in filterExpenses) {
+            // checks if this value is empty
+            if (filterExpenses[e] !== '') {
+                // filters the values ​​of the variable 'data', looking for the same attributes of the
+                // variable 'e' of 'for(let e in filterExpense)' and checking whether the values ​​of this 
+                // attribute are similar, if so, it reassigns the value of the variable to the filtered values,
+                // so that can go through this again, with another attribute value
+                data = data.filter(data => {
+                    // loop through all values of the data object
+                    for (let d in data) {
+                        // checks if attribute and values ​​are both similar
+                        if (d === e && data[d] === filterExpenses[e]) {
+                            return true;
+                        }
+                    }
+                })
+            }
+        }
+
+        return data;
     }
 }
 
@@ -88,7 +115,7 @@ function registerExpenses() {
 
     // checks whether all fields have been filled in, calling a method from the Expenses class
     if (expense.validateData()) {
-        bd.uploadData(expense)
+        bd.setData(expense)
 
         const regExpense = document.getElementById('regExpense'); // ref modal
         const modal = new bootstrap.Modal(regExpense); // create modal instance
@@ -99,11 +126,12 @@ function registerExpenses() {
         modalFooter.className = 'btn btn-success';
 
         modal.show();
+        clearInputs(ano, mes, tipo, dia, descricao, valor);
     } else {
 
         const regExpense = document.getElementById('regExpense'); // ref modal
         const modal = new bootstrap.Modal(regExpense); // create modal instance
-        
+
         modalTitle.innerHTML = 'Erro na inclusão do registro!';
         modalBody.innerHTML = 'Existe campos obrigatórios que não foram preenchidos.';
         modalHeader.className = 'modal-header text-danger';
@@ -113,8 +141,45 @@ function registerExpenses() {
     }
 }
 
-function downloadExpenseLists() {
-    const expenses = bd.downloadData()
+function downloadExpenseLists(expenses = [], filter = false) {
+    // selecting the tbody element from html
+    const expensesList = document.querySelector('#expensesList');
+    expensesList.innerHTML = '';
 
-    console.log(expenses)
+    if (expenses.length === 0 && filter === false) {
+        expenses = bd.getData();
+    }
+
+    expenses.forEach(e => {
+        // creat a row (tr)
+        const row = expensesList.insertRow()
+        const value = parseInt(e.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+
+        // creat the columns (td)
+        row.insertCell(0).innerHTML = `${e.dia}/${e.mes}/${e.ano}`
+        row.insertCell(1).innerHTML = e.tipo;
+        row.insertCell(2).innerHTML = e.descricao;
+        row.insertCell(3).innerHTML = `R$ ${value}`;
+    })
+}
+
+function clearInputs(...elements) {
+    // resets the values of the html fields
+    elements.forEach(e => e.value = '')
+}
+
+function searchExpenses() {
+    const ano = document.querySelector('#ano');
+    const mes = document.querySelector('#mes');
+    const dia = document.querySelector('#dia');
+    const tipo = document.querySelector('#tipo');
+    const descricao = document.querySelector('#descricao');
+    const valor = document.querySelector('#valor');
+    // selecting the tbody element from html
+    const expensesList = document.querySelector('#expensesList');
+
+    const expense = new Expenses(dia.value, mes.value, ano.value, tipo.value, descricao.value, valor.value);
+    const res = bd.search(expense)
+
+    downloadExpenseLists(res, true)
 }
