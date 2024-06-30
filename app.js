@@ -113,10 +113,6 @@ function registerExpenses() {
     const tipo = document.querySelector('#tipo');
     const descricao = document.querySelector('#descricao');
     const valor = document.querySelector('#valor');
-    const modalHeader = document.querySelector('#modalHeader');
-    const modalTitle = document.querySelector('#modalTitle');
-    const modalBody = document.querySelector('#modalBody');
-    const modalFooter = document.querySelector('#modalFooter');
 
     const expense = new Expenses(dia.value, mes.value, ano.value, tipo.value, descricao.value, valor.value);
 
@@ -124,27 +120,26 @@ function registerExpenses() {
     if (expense.validateData()) {
         bd.setData(expense)
 
-        const regExpense = document.getElementById('regExpense'); // ref modal
-        const modal = new bootstrap.Modal(regExpense); // create modal instance
+        // creat responses for the modal
+        const title = 'Registro inserido com sucesso!';
+        const body = 'Despesa cadastrada com sucesso!';
+        const headerClass = 'text-success';
+        const footerClass = 'btn-success';
 
-        modalTitle.innerHTML = 'Registro inserido com sucesso!';
-        modalBody.innerHTML = 'Despesa cadastrada com sucesso!';
-        modalHeader.className = 'modal-header text-success';
-        modalFooter.className = 'btn btn-success';
+        // function to creat and show the modal
+        creatModal(title, body, headerClass, footerClass)
 
-        modal.show();
+        // function to clear input after showing modal on screen
         clearInputs(ano, mes, tipo, dia, descricao, valor);
     } else {
+        // creat responses for the modal
+        const title = 'Erro na inclusão do registro!';
+        const body = 'Existe campos obrigatórios que não foram preenchidos.';
+        const headerClass = 'text-danger';
+        const footerClass = 'btn-danger';
 
-        const regExpense = document.getElementById('regExpense'); // ref modal
-        const modal = new bootstrap.Modal(regExpense); // create modal instance
-
-        modalTitle.innerHTML = 'Erro na inclusão do registro!';
-        modalBody.innerHTML = 'Existe campos obrigatórios que não foram preenchidos.';
-        modalHeader.className = 'modal-header text-danger';
-        modalFooter.className = 'btn btn-danger';
-
-        modal.show();
+        // function to creat and show the modal
+        creatModal(title, body, headerClass, footerClass)
     }
 }
 
@@ -173,7 +168,7 @@ function downloadExpenseLists(expenses = [], filter = false) {
         btn.className = 'btn btn-danger'; // add a class name
         btn.innerHTML = '<i class="fas fa-times"></i>'; // add a icon
         btn.id = `expense_${e.id}`; // add an id
-        btn.onclick = function() {
+        btn.onclick = function () {
             const id = this.id.replace('expense_', '') // get the id that is the same as the localStorage id
             bd.remove(id); // calls remobe method from bd class
         }
@@ -193,11 +188,50 @@ function searchExpenses() {
     const tipo = document.querySelector('#tipo');
     const descricao = document.querySelector('#descricao');
     const valor = document.querySelector('#valor');
-    // selecting the tbody element from html
-    const expensesList = document.querySelector('#expensesList');
 
     const expense = new Expenses(dia.value, mes.value, ano.value, tipo.value, descricao.value, valor.value);
     const res = bd.search(expense)
 
+    let title, body, headerClass, footerClass;
+
+    if (res.length === 0) {
+        // creat responses for the modal
+        title = 'Erro na filtragem!'
+        body = 'Os filtros selecionados não foram encontrados.'
+        headerClass = 'text-warning';
+        footerClass = 'btn-warning';
+
+        // function to creat and show the modal
+        creatModal(title, body, headerClass, footerClass)
+    } else {
+        // creat responses for the modal
+        title = 'Filtrado com sucesso!'
+        body = 'Aqui estão os resultados do seu filtro...'
+        headerClass = 'text-success';
+        footerClass = 'btn-success';
+
+        // function to creat and show the modal
+        creatModal(title, body, headerClass, footerClass)
+    }
+
+    // creatModal()
     downloadExpenseLists(res, true)
+}
+
+// function to creat and show the modal
+function creatModal(title, body, headerClass, footerClass) {
+    const modalHeader = document.querySelector('#modalHeader');
+    const modalTitle = document.querySelector('#modalTitle');
+    const modalBody = document.querySelector('#modalBody');
+    const modalFooter = document.querySelector('#modalFooter');
+
+    const regExpense = document.getElementById('regExpense'); // ref modal
+    const modal = new bootstrap.Modal(regExpense); // create modal instance
+
+    modalTitle.innerHTML = title;
+    modalBody.innerHTML = body;
+    modalHeader.className = `modal-header ${headerClass}`;
+    modalFooter.className = `btn ${footerClass}`;
+
+    modal.show();
 }
