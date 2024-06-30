@@ -60,6 +60,7 @@ class Bd {
                 continue;
             }
 
+            expense.id = i;
             expenses.push(expense);
 
         }
@@ -92,6 +93,12 @@ class Bd {
         }
 
         return data;
+    }
+
+    // remove a expense
+    remove(id) {
+        localStorage.removeItem(id);
+        downloadExpenseLists();
     }
 }
 
@@ -160,6 +167,17 @@ function downloadExpenseLists(expenses = [], filter = false) {
         row.insertCell(1).innerHTML = e.tipo;
         row.insertCell(2).innerHTML = e.descricao;
         row.insertCell(3).innerHTML = `R$ ${value}`;
+
+        // create remove button
+        const btn = document.createElement('button'); // creat button
+        btn.className = 'btn btn-danger'; // add a class name
+        btn.innerHTML = '<i class="fas fa-times"></i>'; // add a icon
+        btn.id = `expense_${e.id}`; // add an id
+        btn.onclick = function() {
+            const id = this.id.replace('expense_', '') // get the id that is the same as the localStorage id
+            bd.remove(id); // calls remobe method from bd class
+        }
+        row.insertCell(4).append(btn);
     })
 }
 
